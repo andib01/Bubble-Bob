@@ -13,7 +13,7 @@ pygame.init()
 
 # Set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Bubble Chaos")
+pygame.display.set_caption("BubbleZilla")
 clock = pygame.time.Clock()
 
 def initialize_game():
@@ -32,15 +32,19 @@ initialize_game()
 font = pygame.font.Font(None, 36)
 BUBBLE_EVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(BUBBLE_EVENT, 1000)  # Spawn a bubble every second
-
+allowed_spawn_areas = [
+    (50, SCREEN_WIDTH - 80 - 50)  
+]
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == BUBBLE_EVENT and not game_over:
-            # Spawn a new bubble
-            bubble = Bubble(random.randint(50, SCREEN_WIDTH - 50), 0)
+            x_position = random.randint(*allowed_spawn_areas[0])
+            
+            # Create and add the bubble
+            bubble = Bubble(x_position, 0)
             all_sprites.add(bubble)
             bubbles.add(bubble)
 
@@ -48,8 +52,7 @@ while running:
 
     if not game_over:
         # Controls
-        if keys[pygame.K_SPACE]:
-            player.jump()
+       
         player.move(keys)
 
         # Update game state
@@ -83,17 +86,18 @@ while running:
             running = False
 
     else:
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_p]:
             initialize_game()
 
     # Drawing
     screen.fill(WHITE)
+    pygame.draw.line(screen,BLACK, (SCREEN_WIDTH - 80, 0), (SCREEN_WIDTH - 80, SCREEN_HEIGHT), 2)
     all_sprites.draw(screen)
 
     # UI Elements
     if game_over:
         game_over_text = font.render("GAME OVER", True, BLACK)
-        restart_text = font.render("PRESS SPACE TO RESTART", True, BLACK)
+        restart_text = font.render("PRESS P TO RESTART", True, BLACK)
         screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
         screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
     else:
