@@ -17,13 +17,13 @@ pygame.display.set_caption("BubbleZilla")
 clock = pygame.time.Clock()
 
 def initialize_game():
-    global player, bubblesFalling, blades, all_sprites, fat_guy, evil_guy, game_over, score, hp
+    global player, bubblesFalling, blades, all_sprites, big_guy, evil_guy, game_over, score, hp
     player = Player()
-    fat_guy = BigGuy()
+    big_guy = BigGuy()
     evil_guy = BladeGuy()
     bubblesFalling = pygame.sprite.Group()
     blades = pygame.sprite.Group()
-    all_sprites = pygame.sprite.Group(player, fat_guy, evil_guy)
+    all_sprites = pygame.sprite.Group(player, big_guy, evil_guy)
     game_over = False
     score = 0
 
@@ -77,10 +77,13 @@ while running:
             if bladeCollisions:
                 bubble.kill()  # Remove the bubble
 
-        # Add bubbles holding in hand to "feed fat guy"
-        if pygame.sprite.collide_rect(player, fat_guy):
+        # Add bubbles holding in hand to "feed big guy"
+        if pygame.sprite.collide_rect(player, big_guy):
             score += player.getBubblesHolding() 
-            player.clearBubblesFromHand()
+            if player.getBubblesHolding() > 0:
+                big_guy.eat(score)
+                player.clearBubblesFromHand()
+
 
         # Blade shooting from Evil Guy
         if random.random() < 0.02:  # Adjust frequency
@@ -89,7 +92,7 @@ while running:
             blades.add(blade)
 
         # Check win condition
-        if score >= 10:  # Win condition: feed Fat Guy 10 times
+        if score >= 14:  # Win condition: feed Fat Guy 10 times
             print("You win!")
             running = False
 
