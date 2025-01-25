@@ -11,6 +11,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 GRAVITY = 0.3
 LIFT = -8
 BASE_BLADE_SPEED = 5
@@ -86,7 +87,6 @@ class ZigzagBlade(Blade):
         super().__init__(speed)
         self.image.fill((255, 165, 0))  # Orange
         self.angle = 0
-        self.amplitude = 50
         self.frequency = 0.1
 
     def update(self):
@@ -100,27 +100,23 @@ class SplitBlade(Blade):
         super().__init__(speed)
         self.image.fill((0, 255, 0))  # Green
         self.has_split = False
-        self.split_position = SCREEN_WIDTH - 500  # Split at x=300
 
     def update(self):
         super().update()
-        if not self.has_split and self.rect.x < self.split_position:
-            # Create two new blades with position constraints
+        if not self.has_split and self.rect.x < SCREEN_WIDTH:
             blade1 = Blade(self.speed)
             blade1.rect = self.rect.copy()
             blade1.rect.y = min(SCREEN_HEIGHT - blade1.rect.height, self.rect.y + 40)
-            
             blade2 = Blade(self.speed)
             blade2.rect = self.rect.copy()
             blade2.rect.y = max(0, self.rect.y - 40)
-            
             all_sprites.add(blade1, blade2)
             blades.add(blade1, blade2)
             self.has_split = True
             self.kill()
 
 def initialize_game():
-    global balloon, all_sprites, blades, score, game_over, previous_level, blade_counter, split_level
+    global balloon, all_sprites, blades, score, game_over, previous_level, split_level, zigzag_level
     balloon = Balloon()
     all_sprites = pygame.sprite.Group()
     all_sprites.add(balloon)
@@ -128,14 +124,18 @@ def initialize_game():
     score = 0
     game_over = False
     previous_level = 0
-    blade_counter = 0
-    split_level = 0  # Track 15-point intervals
+    split_level = 0
+    zigzag_level = 0
 
 # Game initialization
 initialize_game()
 font = pygame.font.Font(None, 36)
 BLADE_EVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(BLADE_EVENT, 1500)
+
+# Bottom wall settings
+WALL_HEIGHT = int(SCREEN_HEIGHT * 0.05)
+wall_top = SCREEN_HEIGHT - WALL_HEIGHT
 
 running = True
 while running:
@@ -146,28 +146,29 @@ while running:
             current_level = score // 25
             blade_speed = BASE_BLADE_SPEED * (1.05 ** current_level)
             
-            # Check for special blades
-            blade_counter += 1
-            current_split_level = score // 15
-            
-            if current_split_level > split_level:
-                # Spawn split blade for every 15 points
+            current_split = score // 15
+            current_zigzag = score // 7
+
+            if current_split > split_level:
                 new_blade = SplitBlade(blade_speed)
-                split_level = current_split_level
-            elif blade_counter % 7 == 0:
-                # Every 7th blade is zigzag
-                new_blade = ZigzagBlade(blade_speed)
+                all_sprites.add(new_blade)
+                blades.add(new_blade)
+                split_level = current_split
+            elif current_zigzag > zigzag_level:
+                zigzag1 = ZigzagBlade(blade_speed)
+                zigzag2 = ZigzagBlade(blade_speed)
+                all_sprites.add(zigzag1, zigzag2)
+                blades.add(zigzag1, zigzag2)
+                zigzag_level = current_zigzag
             else:
-                # Regular blade
                 new_blade = Blade(blade_speed)
-            
-            all_sprites.add(new_blade)
-            blades.add(new_blade)
+                all_sprites.add(new_blade)
+                blades.add(new_blade)
 
     keys = pygame.key.get_pressed()
     
     if not game_over:
-        # Handle controls
+        # Controls
         if keys[pygame.K_SPACE]:
             balloon.lift()
         if keys[pygame.K_LEFT]:
@@ -177,6 +178,10 @@ while running:
 
         # Update game state
         all_sprites.update()
+
+        # Bottom wall collision
+        if balloon.rect.bottom >= wall_top:
+            game_over = True
 
         # Score counting
         for blade in blades:
@@ -201,12 +206,15 @@ while running:
     # Drawing
     screen.fill(WHITE)
     all_sprites.draw(screen)
+    
+    # Draw bottom wall
+    pygame.draw.rect(screen, RED, (0, wall_top, SCREEN_WIDTH, WALL_HEIGHT))
 
+    # UI Elements
     if game_over:
         game_over_text = font.render("GAME OVER", True, BLACK)
         score_text = font.render(f"Final Score: {score}", True, BLACK)
         restart_text = font.render("PRESS SPACE TO TRY AGAIN", True, BLACK)
-        
         screen.blit(game_over_text, (SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 - 50))
         screen.blit(score_text, (SCREEN_WIDTH//2 - 80, SCREEN_HEIGHT//2))
         screen.blit(restart_text, (SCREEN_WIDTH//2 - 160, SCREEN_HEIGHT//2 + 50))
