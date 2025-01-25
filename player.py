@@ -1,5 +1,5 @@
 import pygame
-from constants import GRAVITY, SCREEN_HEIGHT
+from constants import GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -11,26 +11,39 @@ class Player(pygame.sprite.Sprite):
         self.velocity = 0
         self.speed = 5
         self.bubblesHolding = 0
+        self.jumping = 0
+        self.bubbles = []
         self.max_bubbles = 2
         self.hasBubbleLeftHand = False
         self.hasBubbleRightHand = False
         self.hp = 3
 
     def move(self, keys):
-        if keys[pygame.K_LEFT]:
+
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.rect.x -= self.speed
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rect.x += self.speed
+        if keys[pygame.K_SPACE] or keys[pygame.K_UP]:
+            self.jump()
+
+        # Keep the player within screen boundaries
+        self.rect.x = max(0, min(SCREEN_WIDTH - 80-self.rect.width, self.rect.x))
 
     def jump(self):
-        if self.rect.bottom >= SCREEN_HEIGHT:
-            self.velocity = -12
+        if self.jumping == 0:
+            self.velocity = -10
+            self.jumping = 1
+        elif self.jumping == 1 and self.velocity > 0:
+            self.velocity = -6
+            self.jumping = 2
 
     def update(self):
         self.velocity += GRAVITY
         self.rect.y += self.velocity
         if self.rect.bottom >= SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
+            self.jumping = 0
 
     def handleHitByBlade(self):
         if self.bubblesHolding > 0:
