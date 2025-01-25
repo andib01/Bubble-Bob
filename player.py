@@ -24,8 +24,10 @@ class Player(pygame.sprite.Sprite):
             self.rect.x -= self.speed
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rect.x += self.speed
-        if keys[pygame.K_SPACE] or keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             self.jump()
+        if keys [pygame.K_DOWN] or keys[pygame.K_s]:
+            self.rect.y += self.speed   
 
         # Keep the player within screen boundaries
         self.rect.x = max(0, min(SCREEN_WIDTH - 80-self.rect.width, self.rect.x))
