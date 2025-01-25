@@ -30,7 +30,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.y += self.speed   
 
         # Keep the player within screen boundaries
-        self.rect.x = max(0, min(SCREEN_WIDTH - 80-self.rect.width, self.rect.x))
+        self.rect.x = max(90, min(SCREEN_WIDTH - 80-self.rect.width, self.rect.x))
 
     def jump(self):
         if self.jumping == 0:

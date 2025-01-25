@@ -17,7 +17,7 @@ pygame.display.set_caption("BubbleZilla")
 clock = pygame.time.Clock()
 
 def initialize_game():
-    global player, bubblesFalling, blades, all_sprites, big_guy, evil_guy, game_over, score, hp
+    global player, bubblesFalling, blades, all_sprites, big_guy, evil_guy, game_over, win_state, score
     player = Player()
     big_guy = BigGuy()
     evil_guy = BladeGuy()
@@ -25,6 +25,7 @@ def initialize_game():
     blades = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group(player, big_guy, evil_guy)
     game_over = False
+    win_state = False
     score = 0
 
 # Game initialization
@@ -40,9 +41,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == BUBBLE_EVENT and not game_over:
+        if event.type == BUBBLE_EVENT and not game_over and not win_state:
             x_position = random.randint(*allowed_spawn_areas[0])
-            
             # Create and add the bubble
             bubble = Bubble(x_position, 0)
             all_sprites.add(bubble)
@@ -50,10 +50,8 @@ while running:
 
     keys = pygame.key.get_pressed()
 
-    if not game_over:
-
+    if not game_over and not win_state:
         # Controls
-       
         player.move(keys)
 
         # Update game state
@@ -63,7 +61,6 @@ while running:
         for collision in pygame.sprite.spritecollide(player, bubblesFalling, True):
             player.catchBubble()
 
-        # Collision: star hits player
         for collision in pygame.sprite.spritecollide(player, blades, True):
             if player.getHp() == 1:
                 game_over = True
@@ -84,7 +81,6 @@ while running:
                 big_guy.eat(score)
                 player.clearBubblesFromHand()
 
-
         # Blade shooting from Evil Guy
         if random.random() < 0.02:  # Adjust frequency
             blade = evil_guy.shoot_blade()
@@ -92,9 +88,8 @@ while running:
             blades.add(blade)
 
         # Check win condition
-        if score >= 14:  # Win condition: feed Fat Guy 10 times
-            print("You win!")
-            running = False
+        if score >= 14:  # Win condition
+            win_state = True
 
     else:
         if keys[pygame.K_p]:
@@ -106,10 +101,11 @@ while running:
     all_sprites.draw(screen)
 
     # UI Elements
-    if game_over:
-        game_over_text = font.render("GAME OVER", True, BLACK)
+    if game_over or win_state:
+        state_text = "YOU WIN!" if win_state else "GAME OVER"
+        state_message = font.render(state_text, True, BLACK)
         restart_text = font.render("PRESS P TO RESTART", True, BLACK)
-        screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+        screen.blit(state_message, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
         screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
     else:
         score_text = font.render(f"SCORE: {score}", True, BLACK)
