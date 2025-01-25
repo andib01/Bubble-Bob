@@ -1,8 +1,10 @@
 import pygame
-from blade import Blade
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
-class EvilGuy(pygame.sprite.Sprite):
+from blade import Blade
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+
+
+class BladeGuy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((50, 50))
@@ -17,14 +19,3 @@ class EvilGuy(pygame.sprite.Sprite):
 
     def shoot_blade(self):
         return Blade(self.rect.centerx, self.rect.centery)
-
-class FatGuy(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.Surface((60, 80))
-        self.image.fill((255, 165, 0))
-        self.rect = self.image.get_rect(bottomleft=(10, SCREEN_HEIGHT))
-        self.timer = 500
-
-    def update(self):
-        self.timer -= 1

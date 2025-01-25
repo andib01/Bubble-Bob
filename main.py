@@ -1,10 +1,11 @@
 import pygame
 import sys
 import random
+from bigGuy import BigGuy
+from bladeGuy import BladeGuy
 from player import Player
 from bubble import Bubble
-from blade import Blade
-from characters import EvilGuy, FatGuy
+
 from constants import *
 
 # Initialize Pygame
@@ -16,17 +17,15 @@ pygame.display.set_caption("Bubble Chaos")
 clock = pygame.time.Clock()
 
 def initialize_game():
-    global player, bubbles, blades, all_sprites, fat_guy, evil_guy, game_over, score, level_timer, level_time_limit
+    global player, bubbles, blades, all_sprites, fat_guy, evil_guy, game_over, score
     player = Player()
-    fat_guy = FatGuy()
-    evil_guy = EvilGuy()
+    fat_guy = BigGuy()
+    evil_guy = BladeGuy()
     bubbles = pygame.sprite.Group()
     blades = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group(player, fat_guy, evil_guy)
     game_over = False
     score = 0
-    level_timer = 0
-    level_time_limit = 3000  # Time limit for the level (in frames)
 
 # Game initialization
 initialize_game()
@@ -69,8 +68,7 @@ while running:
 
         # Feed Fat Guy
         if len(player.bubbles) == 2 and pygame.sprite.collide_rect(player, fat_guy):
-            player.bubbles.clear()  # Empty the player's hands
-            fat_guy.timer += 300  # Extend Fat Guy's timer
+            player.bubbles.clear()  # Empty the player's hand
             score += 1  # Increment score only when the Fat Guy is fed
 
         # Blade shooting from Evil Guy
@@ -78,15 +76,6 @@ while running:
             blade = evil_guy.shoot_blade()
             all_sprites.add(blade)
             blades.add(blade)
-
-        # Level timer
-        level_timer += 1
-        if level_timer > level_time_limit:
-            game_over = True  # Lose if time runs out
-
-        # Fat Guy timer runs out
-        if fat_guy.timer <= 0:
-            game_over = True  # Lose if Fat Guy isn't fed on time
 
         # Check win condition
         if score >= 10:  # Win condition: feed Fat Guy 10 times
@@ -108,12 +97,8 @@ while running:
         screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
         screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
     else:
-        timer_text = font.render(f"TIME: {level_time_limit - level_timer}", True, BLACK)
         score_text = font.render(f"SCORE: {score}", True, BLACK)
-        fat_guy_timer = font.render(f"FEED TIMER: {fat_guy.timer}", True, BLACK)
-        screen.blit(timer_text, (10, 10))
         screen.blit(score_text, (10, 50))
-        screen.blit(fat_guy_timer, (10, 90))
 
     pygame.display.flip()
     clock.tick(60)
