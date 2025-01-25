@@ -17,11 +17,11 @@ pygame.display.set_caption("Bubble Chaos")
 clock = pygame.time.Clock()
 
 def initialize_game():
-    global player, bubbles, blades, all_sprites, fat_guy, evil_guy, game_over, score
+    global player, bubblesFalling, blades, all_sprites, fat_guy, evil_guy, game_over, score, hp
     player = Player()
     fat_guy = BigGuy()
     evil_guy = BladeGuy()
-    bubbles = pygame.sprite.Group()
+    bubblesFalling = pygame.sprite.Group()
     blades = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group(player, fat_guy, evil_guy)
     game_over = False
@@ -42,11 +42,12 @@ while running:
             # Spawn a new bubble
             bubble = Bubble(random.randint(50, SCREEN_WIDTH - 50), 0)
             all_sprites.add(bubble)
-            bubbles.add(bubble)
+            bubblesFalling.add(bubble)
 
     keys = pygame.key.get_pressed()
 
     if not game_over:
+
         # Controls
         if keys[pygame.K_SPACE]:
             player.jump()
@@ -55,21 +56,28 @@ while running:
         # Update game state
         all_sprites.update()
 
-        # Collision: Player collects bubbles
-        for bubble in pygame.sprite.spritecollide(player, bubbles, True):
-            if len(player.bubbles) < player.max_bubbles:
-                player.bubbles.append(bubble)
+        # Collision: player collects bubbles 
+        for collision in pygame.sprite.spritecollide(player, bubblesFalling, True):
+            player.catchBubble()
 
-        # Collision: Blades destroy bubbles
-        for bubble in player.bubbles[:]:
-            if pygame.sprite.spritecollideany(bubble, blades):
-                player.bubbles.remove(bubble)
-                bubble.kill()
+        # Collision: star hits player
+        for collision in pygame.sprite.spritecollide(player, blades, True):
+            if player.getHp() == 1:
+                game_over = True
+                break
+            else:
+                player.handleHitByBlade()
 
-        # Feed Fat Guy
-        if len(player.bubbles) == 2 and pygame.sprite.collide_rect(player, fat_guy):
-            player.bubbles.clear()  # Empty the player's hand
-            score += 1  # Increment score only when the Fat Guy is fed
+        # Collision: blade hits a falling bubble
+        for bubble in bubblesFalling:
+            bladeCollisions = pygame.sprite.spritecollide(bubble, blades, True)  # Check blades colliding with this bubble
+            if bladeCollisions:
+                bubble.kill()  # Remove the bubble
+
+        # Add bubbles holding in hand to "feed fat guy"
+        if pygame.sprite.collide_rect(player, fat_guy):
+            score += player.getBubblesHolding() 
+            player.clearBubblesFromHand()
 
         # Blade shooting from Evil Guy
         if random.random() < 0.02:  # Adjust frequency
@@ -98,7 +106,11 @@ while running:
         screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
     else:
         score_text = font.render(f"SCORE: {score}", True, BLACK)
+        hp_text = font.render(f"HP: {player.getHp()}", True, BLACK)
+        temp_bubblesHolding = font.render(f"You are holding: {player.getBubblesHolding()} bubbles", True, BLACK)
         screen.blit(score_text, (10, 50))
+        screen.blit(temp_bubblesHolding, (10, 100))
+        screen.blit(hp_text, (10, 150))
 
     pygame.display.flip()
     clock.tick(60)
