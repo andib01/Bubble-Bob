@@ -15,6 +15,15 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("BubbleZilla")
 clock = pygame.time.Clock()
+heart_image = pygame.image.load("assets/heart.png").convert_alpha()
+heart_image = pygame.transform.smoothscale(heart_image, (30, 30))
+
+
+def draw_hearts(screen, hp):
+    x_offset = SCREEN_WIDTH - 120
+    for i in range(hp):
+        screen.blit(heart_image, (x_offset, 10))
+        x_offset += heart_image.get_width() + 5
 
 def initialize_game():
     global player, bubblesFalling, blades, all_sprites, big_guy, evil_guy, game_over, win_state, score
@@ -99,6 +108,7 @@ while running:
     screen.fill(WHITE)
     pygame.draw.line(screen,BLACK, (SCREEN_WIDTH - 80, 0), (SCREEN_WIDTH - 80, SCREEN_HEIGHT), 2)
     all_sprites.draw(screen)
+    draw_hearts(screen, player.hp)
 
     # UI Elements
     if game_over or win_state:
