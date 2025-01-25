@@ -11,7 +11,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity = 0
         self.speed = 5
         self.bubbles = []
-        self.max_bubbles = 2
+        self.max_bubbles = 22
 
     def move(self, keys):
         if keys[pygame.K_LEFT]:
