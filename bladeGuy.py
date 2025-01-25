@@ -1,14 +1,15 @@
 import pygame
 
 from blade import Blade
-from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
 
 
 class BladeGuy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface((50, 50))
-        self.image.fill((128, 0, 128))
+        self.image = pygame.image.load("assets/svenolai.png")
+        self.image = pygame.transform.scale(self.image, (75,75)) 
+        self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect(center=(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2))
         self.direction = 1
 

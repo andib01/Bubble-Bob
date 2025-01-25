@@ -1,11 +1,13 @@
 import pygame
-from constants import GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH,WHITE
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface((30, 50))
-        self.image.fill((0, 0, 255))
+        # Load the placeholder stickman image
+        self.image = pygame.image.load("assets/placeholderStick.png")
+        self.image = pygame.transform.scale(self.image, (125,125)) 
+        self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
         self.rect.midbottom = (400, SCREEN_HEIGHT - 10)
         self.velocity = 0

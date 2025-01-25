@@ -25,6 +25,10 @@ def draw_hearts(screen, hp):
         screen.blit(heart_image, (x_offset, 10))
         x_offset += heart_image.get_width() + 5
 
+# Load the background image
+background_image = pygame.image.load("assets/background.jpg")
+background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))  # Scale to screen size
+
 def initialize_game():
     global player, bubblesFalling, blades, all_sprites, big_guy, evil_guy, game_over, win_state, score
     player = Player()
@@ -43,7 +47,7 @@ font = pygame.font.Font(None, 36)
 BUBBLE_EVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(BUBBLE_EVENT, 1000)  # Spawn a bubble every second
 allowed_spawn_areas = [
-    (50, SCREEN_WIDTH - 80 - 50)  
+    (90, SCREEN_WIDTH - 80 - 50)  
 ]
 running = True
 while running:
@@ -105,7 +109,7 @@ while running:
             initialize_game()
 
     # Drawing
-    screen.fill(WHITE)
+    screen.blit(background_image, (0, 0))
     pygame.draw.line(screen,BLACK, (SCREEN_WIDTH - 80, 0), (SCREEN_WIDTH - 80, SCREEN_HEIGHT), 2)
     all_sprites.draw(screen)
     draw_hearts(screen, player.hp)
