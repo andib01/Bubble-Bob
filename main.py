@@ -5,7 +5,6 @@ from bigGuy import BigGuy
 from bladeGuy import BladeGuy
 from player import Player
 from bubble import Bubble
-
 from constants import *
 
 # Initialize Pygame
@@ -18,79 +17,119 @@ clock = pygame.time.Clock()
 heart_image = pygame.image.load("assets/heart.png").convert_alpha()
 heart_image = pygame.transform.smoothscale(heart_image, (30, 30))
 
-
-def draw_hearts(screen, hp):
-    x_offset = SCREEN_WIDTH - 120
-    for i in range(hp):
-        screen.blit(heart_image, (x_offset, 10))
-        x_offset += heart_image.get_width() + 5
-
 # Load the background image
 background_image = pygame.image.load("assets/background.jpg")
 background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))  # Scale to screen size
 
-def initialize_game():
-    global player, bubblesFalling, blades, all_sprites, big_guy, evil_guy, game_over, win_state, score
-    player = Player()
-    big_guy = BigGuy()
-    evil_guy = BladeGuy()
-    bubblesFalling = pygame.sprite.Group()
-    blades = pygame.sprite.Group()
-    all_sprites = pygame.sprite.Group(player, big_guy, evil_guy)
-    game_over = False
-    win_state = False
-    score = 0
-
-# Game initialization
-initialize_game()
 font = pygame.font.Font(None, 36)
 BUBBLE_EVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(BUBBLE_EVENT, 1000)  # Spawn a bubble every second
-allowed_spawn_areas = [
-    (90, SCREEN_WIDTH - 80 - 50)  
-]
-def stop_game():
-    global game_over
+allowed_spawn_areas = [(90, SCREEN_WIDTH - 80 - 50)]
+
+
+def draw_hearts(screen, hp, x_offset):
+    for i in range(hp):
+        screen.blit(heart_image, (x_offset, 10))
+        x_offset += heart_image.get_width() + 5
+
+
+def initialize_game():
+    global player, bubblesFalling, blades, fight_bubbles, all_sprites, big_guy, blade_guy, game_over, win_state, score
+    player = Player()
+    big_guy = BigGuy()
+    blade_guy = BladeGuy()
+    bubblesFalling = pygame.sprite.Group()
+    blades = pygame.sprite.Group()
+    fight_bubbles = pygame.sprite.Group()  # Group for BigGuy's bubbles
+    all_sprites = pygame.sprite.Group(player, big_guy, blade_guy)
+    game_over = False
+    win_state = None  # None = ongoing, True = Big Guy wins, False = Blade Guy wins
+    score = 0
+
+
+def stop_game(winner=None):
+    """Stops the game and displays the appropriate ending screen."""
+    global game_over, win_state
     game_over = True
-    state_text = "YOU WIN!" if win_state else "GAME OVER"
+    win_state = winner  # None if no winner (e.g., player dies before boss fight)
+
+    if winner is None:
+        # Display "YOU LOSE" when the player dies before the boss fight
+        state_text = "YOU LOSE!"
+    else:
+        # Display winner text
+        state_text = "YOU WIN" if winner else "YOU LOSE"
+
     state_message = font.render(state_text, True, BLACK)
-    restart_text = font.render("PRESS P TO RESTART", True, BLACK)
-    screen.blit(state_message, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+    restart_text = font.render("PRESS P TO PLAY AGAIN", True, BLACK)
+    screen.blit(state_message, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
     screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_p]:
+        initialize_game()
+
+
+def end_game():
+    """Transition to the final fight (Big Guy vs Blade Guy)."""
+    global win_state, all_sprites, bubblesFalling, blades, fight_bubbles
+
+    # Add a 200 milli second delay for the transition
+    pygame.time.wait(200)
+
+    # Remove all bubbles and blades from the screen
+    for bubble in bubblesFalling:
+        bubble.kill()
+    bubblesFalling.empty()
+
+    for blade in blades:
+        blade.kill()
+    blades.empty()
+
+    for fight_bubble in fight_bubbles:
+        fight_bubble.kill()
+    fight_bubbles.empty()
+
+    # Transition to the final fight
+    win_state = True
+    all_sprites.remove(player)  # Remove the player from the game
+
+
+# Game initialization
+initialize_game()
 running = True
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == BUBBLE_EVENT and not game_over and not win_state:
+        if event.type == BUBBLE_EVENT and not game_over and win_state is None:
             x_position = random.randint(*allowed_spawn_areas[0])
-            # Create and add the bubble
             bubble = Bubble(x_position, 0)
             all_sprites.add(bubble)
             bubblesFalling.add(bubble)
 
     keys = pygame.key.get_pressed()
 
-    if not game_over and not win_state:
+    if not game_over and win_state is None:
         # Controls
         player.move(keys)
-
         # Update game state
         all_sprites.update()
+        blades.update()  # Ensure blades are moving
 
-        # Collision: player collects bubbles 
+        # Collision: player collects bubbles
         for collision in pygame.sprite.spritecollide(player, bubblesFalling, True):
             player.catchBubble()
 
+        # Collision: player gets hit by blades
         for collision in pygame.sprite.spritecollide(player, blades, True):
-            
-                player.handleHitByBlade(stop_game)
+            player.handleHitByBlade(stop_game)
 
         # Collision: blade hits a falling bubble
         for bubble in bubblesFalling:
-            bladeCollisions = pygame.sprite.spritecollide(bubble, blades, True)  # Check blades colliding with this bubble
+            bladeCollisions = pygame.sprite.spritecollide(bubble, blades, True)
             if bladeCollisions:
-                bubble.kill()  # Remove the bubble
+                bubble.kill()
 
         # Add bubbles holding in hand to "feed big guy", must be 2 bubbles
         if pygame.sprite.collide_rect(player, big_guy) and player.getBubblesHolding() == 2:
@@ -99,29 +138,79 @@ while running:
                 big_guy.eat(score)
                 player.clearBubblesFromHand()
 
-        # Blade shooting from Evil Guy
-        if random.random() < 0.02:  # Adjust frequency
-            blade = evil_guy.shoot_blade()
+        # Blade shooting from Blade Guy
+        if random.random() < 0.02:
+            blade = blade_guy.shoot_blade()
             all_sprites.add(blade)
             blades.add(blade)
 
         # Check win condition
-        if score >= 14:  # Win condition
-            win_state = True
+        if score >= 14:  # Win condition for transition
+            end_game()
+
+    elif win_state:  # Final fight logic
+        current_time = pygame.time.get_ticks()
+        # Big Guy fight controls
+        big_guy.move(keys)
+
+        # Big Guy shooting bubbles
+        if keys[pygame.K_x]:
+            fight_bubble = big_guy.shoot_bubble(current_time)
+            if fight_bubble:
+                all_sprites.add(fight_bubble)
+                fight_bubbles.add(fight_bubble)
+        for bubble in fight_bubbles:
+            bubble.update()
+            if bubble.rect.right > SCREEN_WIDTH:  # Bubble went off-screen
+                bubble.kill()
+                big_guy.bubble_active = False        
+
+        # BladeGuy shooting blades during boss fight
+        if random.random() < 0.02:
+            blade = blade_guy.shoot_blade()
+            all_sprites.add(blade)
+            blades.add(blade)
+
+        # Update Blade Guy's behavior and projectiles only if Big Guy hasn't won
+        if not game_over or win_state is None:
+            blade_guy.update()
+            blades.update()
+            fight_bubbles.update()
+
+        # Check collisions: Big Guy's bubbles hit Blade Guy
+        for bubble in pygame.sprite.spritecollide(blade_guy, fight_bubbles, True):
+            blade_guy.hp -= 1
+            if blade_guy.hp <= 0:
+                stop_game(True)  # Big Guy wins
+
+        # Check collisions: Blade Guy's blades hit Big Guy
+        for blade in pygame.sprite.spritecollide(big_guy, blades, True):
+            big_guy.hp -= 1
+            if big_guy.hp <= 0:
+                stop_game(False)  # Blade Guy wins
 
     else:
         if keys[pygame.K_p]:
-            initialize_game() 
+            initialize_game()
+            
+            
+           
 
     # Drawing
     screen.blit(background_image, (0, 0))
     all_sprites.draw(screen)
-    draw_hearts(screen, player.hp)
+
+    # Health bars
+    if win_state:
+        draw_hearts(screen, big_guy.hp, SCREEN_WIDTH - 780)
+        draw_hearts(screen, blade_guy.hp, SCREEN_WIDTH - 120)
+    else:
+        draw_hearts(screen, player.hp, SCREEN_WIDTH - 120)
 
     # UI Elements
-    if game_over or win_state:
-        stop_game()
-    else:
+    if game_over:
+        stop_game(win_state)
+    elif win_state is None:
         score_text = font.render(f"SCORE: {score}", True, BLACK)
         temp_bubblesHolding = font.render(f"You are holding: {player.getBubblesHolding()} bubbles", True, BLACK)
         screen.blit(score_text, (10, 50))

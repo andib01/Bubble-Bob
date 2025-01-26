@@ -1,5 +1,6 @@
 import pygame
 from constants import SCREEN_HEIGHT
+from fightBubble import FightBubble
 from utils import graphics_helper
 
 class BigGuy(pygame.sprite.Sprite):
@@ -20,7 +21,8 @@ class BigGuy(pygame.sprite.Sprite):
         self.current_state = "idle"
         self.image = self.images[self.current_state]
         self.rect = self.image.get_rect(bottomleft=(5, SCREEN_HEIGHT))
-
+        self.bubble_active = False
+        self.bubble_cooldown = 0  # Cooldown timer in milliseconds
         self.angle = 0
         self.update()
 
@@ -32,7 +34,8 @@ class BigGuy(pygame.sprite.Sprite):
         bottomleft = self.rect.bottomleft
         self.rect = self.image.get_rect()
         self.rect.bottomleft = bottomleft
-      
+        self.speed = 4
+        self.hp = 3
 
     def eat(self, bubble_count):
         if bubble_count == 4:
@@ -42,19 +45,30 @@ class BigGuy(pygame.sprite.Sprite):
         elif bubble_count == 10:
             self.current_state = "eat3"
         elif bubble_count == 12:
-            self.current_state = "eat4"    
-            # TODO: Here the main guy should be ready to fight the evil guy
+            self.current_state = "eat4"
 
+        # TODO: Add sound effect for eating: e.g. burping sound
 
-        # TODO: Add sound effect for eating: e.g. burbing sound     
-
-        
         # Update the displayed image
         self.image = self.images[self.current_state]
-        
+
         # Update rect so sprite doesn't shift if image size changes
         bottomleft = self.rect.bottomleft
         self.rect = self.image.get_rect()
         self.rect.bottomleft = bottomleft
-        
 
+    def move(self, keys):
+        if keys[pygame.K_w]:
+            self.rect.y -= self.speed
+        if keys[pygame.K_s]:
+            self.rect.y += self.speed
+
+        # Keep within bounds
+        self.rect.y = max(0, min(SCREEN_HEIGHT - self.rect.height, self.rect.y))
+
+    def shoot_bubble(self, current_time):
+        if current_time >= self.bubble_cooldown:  # Check if cooldown has passed
+            self.bubble_active = True
+            self.bubble_cooldown = current_time + 500  # 500ms cooldown
+            return FightBubble(self.rect.right, self.rect.centery)
+        return None

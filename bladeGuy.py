@@ -9,12 +9,13 @@ class BladeGuy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("assets/svenolai.png")
-        self.image = pygame.transform.scale(self.image, (75,75)) 
+        self.image = pygame.transform.scale(self.image, (75, 75))
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect(center=(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2))
         self.direction = 1
         self.speed = 3  # Base speed for movement
         self.change_direction_timer = 0  # Timer for changing direction
+        self.hp = 3
 
     def update(self):
         # Randomly change direction and speed every 30 frames
@@ -27,8 +28,12 @@ class BladeGuy(pygame.sprite.Sprite):
         self.change_direction_timer -= 1  # Decrease timer
 
         # Prevent BladeGuy from moving off-screen
-        if self.rect.top <= 0 or self.rect.bottom >= SCREEN_HEIGHT:
-            self.direction *= -1  # Reverse direction to stay in bounds
+        if self.rect.top < 0:
+            self.rect.top = 0  # Clamp position to the top
+            self.direction = 1  # Move downward
+        elif self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT  # Clamp position to the bottom
+            self.direction = -1  # Move upward
 
     def shoot_blade(self):
         return Blade(self.rect.centerx, self.rect.centery)
