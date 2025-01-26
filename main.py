@@ -28,27 +28,28 @@ font = pygame.font.Font(None, 36)
 BUBBLE_EVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(BUBBLE_EVENT, 1000)  # Spawn a bubble every second
 allowed_spawn_areas = [(90, SCREEN_WIDTH - 80 - 50)]
-
+global level
+level = 1
 
 def draw_hearts(screen, hp, x_offset):
     for i in range(hp):
         screen.blit(heart_image, (x_offset, 10))
         x_offset += heart_image.get_width() + 5
-def show_pre_fight_screen():
-    """Displays the pre-fight screen with a message and waits for any key to start the fight."""
+def show_level2_screen():
+    """Displays the screen before Level 2 starts."""
     screen.blit(background_image, (0, 0))  # Load and display the background image
-    title_text = font.render("Oh, but this is not the end...", True, BLACK)
-    fight_text = font.render("Now is the time for a real fight!", True, BLACK)
-    start_text = font.render("Press any key to continue...", True, BLACK)
+    title_text = font.render("SvenOl AI: You won the battle, but not the war!", True, BLACK)
+    continue_text = font.render("Press SPACE to continue to Level 2.", True, BLACK)
+    quit_text = font.render("Press Q to quit.", True, BLACK)
 
     # Draw text on the screen
-    screen.blit(title_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 100))
-    screen.blit(fight_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
-    screen.blit(start_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 50))
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 100))
+    screen.blit(continue_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
+    screen.blit(quit_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2))
 
     pygame.display.flip()  # Update the display
 
-    # Wait for any key press to continue
+    # Wait for SPACE or Q key press
     waiting = True
     while waiting:
         for event in pygame.event.get():
@@ -56,14 +57,71 @@ def show_pre_fight_screen():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                waiting = False  # Exit the loop when a key is pressed
+                if event.key == pygame.K_SPACE:  # Continue to Level 2
+                    waiting = False
+                elif event.key == pygame.K_q:  # Quit the game
+                    pygame.quit()
+                    sys.exit()
+def show_victory_screen():
+    """Displays the victory screen and waits for the player to restart the game."""
+    screen.blit(background_image, (0, 0))  # Display the background image
+    title_text = font.render("You have defeated SvenOl AI!", True, BLACK)
+    reign_text = font.render("Bubbles reign supreme! All Hail Bubbles.", True, BLACK)
+    restart_text = font.render("Press P if you want to play again.", True, BLACK)
+
+    # Draw text on the screen
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 100))
+    screen.blit(reign_text, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
+    screen.blit(restart_text, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2))
+
+    pygame.display.flip()  # Update the display
+
+    # Wait for the player to press P to restart
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    waiting = False  # Exit the loop when P is pressed
+
+def show_pre_fight_screen():
+    """Displays the pre-fight screen with a message and instructions for the boss fight."""
+    screen.blit(background_image, (0, 0))  # Load and display the background image
+    title_text = font.render("Oh, but this is not the end...", True, BLACK)
+    fight_text = font.render("Now is the time for a real fight!", True, BLACK)
+    shoot_text = font.render("Press X to shoot bubbles.", True, BLACK)
+    move_text = font.render("Use WS or arrow keys to move vertically.", True, BLACK)
+    start_text = font.render("Press SPACE to continue...", True, BLACK)
+
+    # Draw text on the screen
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 140))
+    screen.blit(fight_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 100))
+    screen.blit(shoot_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 60))
+    screen.blit(move_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 20))
+    screen.blit(start_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 50))
+
+    pygame.display.flip()  # Update the display
+
+    # Wait for SPACE key press to continue
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                waiting = False  # Exit the loop when SPACE is pressed
+
 
 def show_welcome_screen():
     """Displays the welcome screen with game instructions."""
     screen.blit(background_image, (0, 0))  # Load and display the background image
     title_text = font.render("Welcome to BubbleZilla!", True, BLACK)
     instructions_text = font.render(
-        "Goal: Feed the sphere to your left with bubbles.", True, BLACK
+    "Goal: Feed the chunky bubble to your left with bubbles.", True, BLACK
     )
     controls_line1 = font.render(
         "Controls: Use arrow keys or AD to move.", True, BLACK
@@ -72,9 +130,9 @@ def show_welcome_screen():
         "Space or arrow UP to jump.", True, BLACK
     )
     controls_line3 = font.render(
-        "Avoid blades thrown by Sven Ol-AI.", True, BLACK
+        "Avoid blades thrown by SvenOl AI!", True, BLACK
     )
-    start_text = font.render("Press any key to start...", True, BLACK)
+    start_text = font.render("Press space to start...", True, BLACK)
 
     # Draw text on the screen
     screen.blit(title_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 180))
@@ -93,12 +151,13 @@ def show_welcome_screen():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 waiting = False  # Exit the loop when a key is pressed
 
 
 def initialize_game():
     global player, bubblesFalling, fight_bubbles, blades, all_sprites, big_guy, blade_guy, game_over, win_state, score, popSound, jumpSound, disposeSound, ouchSound, dieSound, s
+    global player, bubblesFalling, blades, fight_bubbles, all_sprites, big_guy, blade_guy, game_over, win_state, score, level
     player = Player()
     big_guy = BigGuy()
     blade_guy = BladeGuy()
@@ -115,29 +174,67 @@ def initialize_game():
     disposeSound = pygame.mixer.Sound(os.path.join(s, 'dispose.mp3'))
     ouchSound = pygame.mixer.Sound(os.path.join(s, 'ouch.mp3'))
     dieSound = pygame.mixer.Sound(os.path.join(s, 'die.mp3'))
+    level = 1
 
 
 def stop_game(winner=None):
     """Stops the game and displays the appropriate ending screen."""
-    global game_over, win_state
+    global game_over, win_state, blade_guy, level
     game_over = True
-    win_state = winner  # None if no winner (e.g., player dies before boss fight)
+    win_state = winner  # None if no winner, True if player wins, False if player loses
 
-    if winner is None:
-        # Display "YOU LOSE" when the player dies before the boss fight
+    # Initialize default messages to avoid UnboundLocalError
+    state_text = ""
+    line1 = ""
+    line2 = ""
+
+    if not winner:
+        # Player loses
         state_text = "YOU LOSE!"
+        line1 = "Press P to play again."
+        line2 = ""  # No additional line for losing case
+    elif winner and level == 1:
+        # Transition to Level 2
+        show_level2_screen()  # Display Level 2 transition screen
+        blade_guy.hp = 3  # Restore Blade Guy's HP
+        blade_guy.increase_speed()  # Activate speed boost for Level 2
+        level += 1  # Increment the level
+        game_over = False  # Reset game state for the next level
+        return  # Skip the rest of the function since the game continues
     else:
-        # Display winner text
-        state_text = "YOU WIN" if winner else "YOU LOSE"
+        # Final victory after Level 2
+        state_text = "You have defeated Sven-Ol-AI!"
+        line1 = "Bubbles reign supreme! All Hail Bubbles."
+        line2 = "Press P to play again."  # Allow the player to restart after final victory
 
+    # Draw the text on the screen
+    screen.blit(background_image, (0, 0))  # Display the background image
     state_message = font.render(state_text, True, BLACK)
-    restart_text = font.render("PRESS P TO PLAY AGAIN", True, BLACK)
-    screen.blit(state_message, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
-    screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_p]:
-        initialize_game()
+    line1_message = font.render(line1, True, BLACK)
+    line2_message = font.render(line2, True, BLACK)
 
+    # Position the messages
+    screen.blit(state_message, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 100))  # Main message
+    screen.blit(line1_message, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))   # Line 1
+    screen.blit(line2_message, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2))       # Line 2
+
+    pygame.display.flip()
+
+    # Wait for the player to press P to restart the game
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    # Restart the game
+                    level = 1  # Reset level
+                    initialize_game()  # Reinitialize the game state
+                    game_over = False  # Reset game_over
+                    win_state = None  # Reset win_state
+                    waiting = False  # Exit the loop
 
 def end_game():
     """Transition to the final fight (Big Guy vs Blade Guy)."""
@@ -231,7 +328,7 @@ while running:
             blades.add(blade)
 
         # Check win condition
-        if score >= 14:  # Win condition for transition
+        if score >= 1:  # Win condition for transition
             end_game()
 
     elif win_state:  # Final fight logic
