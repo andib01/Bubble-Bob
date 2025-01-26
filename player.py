@@ -1,4 +1,5 @@
 import pygame
+import os
 from constants import GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
 
 class Player(pygame.sprite.Sprite):
@@ -74,12 +75,12 @@ class Player(pygame.sprite.Sprite):
     def handleHitByBlade(self,stop_game):
         if self.bubblesHolding > 0:
             self.bubblesHolding -= 1
-            return
+            return "lostBubble"
         elif self.getHp() == 0:
-            stop_game()
-            return
+            return "die"
         else:
             self.remove_hp()
+            return "lostHp"
 
     def catchBubble(self):
         if self.bubblesHolding < self.max_bubbles:
