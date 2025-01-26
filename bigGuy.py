@@ -12,7 +12,7 @@ class BigGuy(pygame.sprite.Sprite):
             "eat2": pygame.image.load("assets/big_guy/eat_2.png").convert_alpha(),
             "eat3": pygame.image.load("assets/big_guy/eat_3.png").convert_alpha()
         }
-        graphics_helper.scale_surfaces_in_dict(self.images, 120)
+        graphics_helper.scale_surfaces(self.images, 120)
 
         self.image = pygame.Surface((120, 120), pygame.SRCALPHA)
 
