@@ -115,7 +115,6 @@ while running:
 
     # Drawing
     screen.blit(background_image, (0, 0))
-    pygame.draw.line(screen,BLACK, (SCREEN_WIDTH - 80, 0), (SCREEN_WIDTH - 80, SCREEN_HEIGHT), 2)
     all_sprites.draw(screen)
     draw_hearts(screen, player.hp)
 
