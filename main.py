@@ -92,8 +92,8 @@ while running:
             if bladeCollisions:
                 bubble.kill()  # Remove the bubble
 
-        # Add bubbles holding in hand to "feed big guy"
-        if pygame.sprite.collide_rect(player, big_guy):
+        # Add bubbles holding in hand to "feed big guy", must be 2 bubbles
+        if pygame.sprite.collide_rect(player, big_guy) and player.getBubblesHolding() == 2:
             score += player.getBubblesHolding() 
             if player.getBubblesHolding() > 0:
                 big_guy.eat(score)
