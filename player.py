@@ -7,14 +7,16 @@ class Player(pygame.sprite.Sprite):
 
         # Load images for different states
         self.images = {
-            "idle": pygame.image.load("assets/player/faddyidle.jpg").convert_alpha(),
-            "runningLeft": pygame.image.load("assets/player/faddyleft.jpg").convert_alpha(),
-            "runningRight": pygame.image.load("assets/player/faddyright.jpg").convert_alpha(),
+            "idle": pygame.image.load("assets/player/idle.png").convert_alpha(),
+            "runningLeft": pygame.image.load("assets/player/runningLeft.png").convert_alpha(),
+            "runningRight": pygame.image.load("assets/player/runningRight.png").convert_alpha(),
+            "jumping": pygame.image.load("assets/player/jumping.png").convert_alpha(),
+            "falling": pygame.image.load("assets/player/falling.png").convert_alpha(),
         }
 
         # Scale all images
         for key in self.images:
-            self.images[key] = pygame.transform.scale(self.images[key], (105, 105))
+            self.images[key] = pygame.transform.scale(self.images[key], (130, 130))
             
 
         # Set initial state
@@ -45,8 +47,10 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             self.jump()
+            self.current_state = "jumping"
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.rect.y += 12
+            self.current_state = "falling"
 
         # Keep the player within screen boundaries
         self.rect.x = max(90, min(SCREEN_WIDTH - 80-self.rect.width, self.rect.x))
