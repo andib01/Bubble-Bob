@@ -123,11 +123,9 @@ while running:
         stop_game()
     else:
         score_text = font.render(f"SCORE: {score}", True, BLACK)
-        hp_text = font.render(f"HP: {player.getHp()}", True, BLACK)
         temp_bubblesHolding = font.render(f"You are holding: {player.getBubblesHolding()} bubbles", True, BLACK)
         screen.blit(score_text, (10, 50))
         screen.blit(temp_bubblesHolding, (10, 100))
-        screen.blit(hp_text, (10, 150))
 
     pygame.display.flip()
     clock.tick(60)
