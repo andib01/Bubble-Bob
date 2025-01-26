@@ -58,9 +58,9 @@ class BigGuy(pygame.sprite.Sprite):
         self.rect.bottomleft = bottomleft
 
     def move(self, keys):
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.rect.y -= self.speed
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             self.rect.y += self.speed
 
         # Keep within bounds
