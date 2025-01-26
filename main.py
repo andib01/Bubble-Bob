@@ -49,6 +49,14 @@ pygame.time.set_timer(BUBBLE_EVENT, 1000)  # Spawn a bubble every second
 allowed_spawn_areas = [
     (90, SCREEN_WIDTH - 80 - 50)  
 ]
+def stop_game():
+    global game_over
+    game_over = True
+    state_text = "YOU WIN!" if win_state else "GAME OVER"
+    state_message = font.render(state_text, True, BLACK)
+    restart_text = font.render("PRESS P TO RESTART", True, BLACK)
+    screen.blit(state_message, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+    screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
 running = True
 while running:
     for event in pygame.event.get():
@@ -75,11 +83,8 @@ while running:
             player.catchBubble()
 
         for collision in pygame.sprite.spritecollide(player, blades, True):
-            if player.getHp() == 1:
-                game_over = True
-                break
-            else:
-                player.handleHitByBlade()
+            
+                player.handleHitByBlade(stop_game)
 
         # Collision: blade hits a falling bubble
         for bubble in bubblesFalling:
@@ -106,7 +111,7 @@ while running:
 
     else:
         if keys[pygame.K_p]:
-            initialize_game()
+            initialize_game() 
 
     # Drawing
     screen.blit(background_image, (0, 0))
@@ -116,11 +121,7 @@ while running:
 
     # UI Elements
     if game_over or win_state:
-        state_text = "YOU WIN!" if win_state else "GAME OVER"
-        state_message = font.render(state_text, True, BLACK)
-        restart_text = font.render("PRESS P TO RESTART", True, BLACK)
-        screen.blit(state_message, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
-        screen.blit(restart_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 10))
+        stop_game()
     else:
         score_text = font.render(f"SCORE: {score}", True, BLACK)
         hp_text = font.render(f"HP: {player.getHp()}", True, BLACK)

@@ -49,9 +49,12 @@ class Player(pygame.sprite.Sprite):
             self.rect.bottom = SCREEN_HEIGHT
             self.jumping = 0
 
-    def handleHitByBlade(self):
+    def handleHitByBlade(self,stop_game):
         if self.bubblesHolding > 0:
             self.bubblesHolding -= 1
+            return
+        elif self.getHp() == 0:
+            stop_game()
             return
         else:
             self.remove_hp()
