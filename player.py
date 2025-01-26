@@ -1,12 +1,25 @@
 import pygame
-from constants import GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH,WHITE
+from constants import GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        # Load the placeholder stickman image
-        self.image = pygame.image.load("assets/placeholderStick.png")
-        self.image = pygame.transform.scale(self.image, (125,125)) 
+
+        # Load images for different states
+        self.images = {
+            "idle": pygame.image.load("assets/player/faddyidle.jpg").convert_alpha(),
+            "runningLeft": pygame.image.load("assets/player/faddyleft.jpg").convert_alpha(),
+            "runningRight": pygame.image.load("assets/player/faddyright.jpg").convert_alpha(),
+        }
+
+        # Scale all images
+        for key in self.images:
+            self.images[key] = pygame.transform.scale(self.images[key], (105, 105))
+            
+
+        # Set initial state
+        self.current_state = "idle"
+        self.image = self.images[self.current_state]
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
         self.rect.midbottom = (400, SCREEN_HEIGHT - 10)
@@ -21,15 +34,19 @@ class Player(pygame.sprite.Sprite):
         self.hp = 3
 
     def move(self, keys):
-
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.rect.x -= self.speed
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.current_state = "runningLeft"  
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rect.x += self.speed
+            self.current_state = "runningRight" 
+        else:
+            self.current_state = "idle"  
+
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             self.jump()
-        if keys [pygame.K_DOWN] or keys[pygame.K_s]:
-            self.rect.y += 12   
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            self.rect.y += 12
 
         # Keep the player within screen boundaries
         self.rect.x = max(90, min(SCREEN_WIDTH - 80-self.rect.width, self.rect.x))
@@ -48,6 +65,11 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom >= SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             self.jumping = 0
+            if not (pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_RIGHT]):
+                self.current_state = "idle"  # Return to idle state when grounded
+
+        # Update the displayed image based on the current state
+        self.image = self.images[self.current_state]
 
     def handleHitByBlade(self,stop_game):
         if self.bubblesHolding > 0:
@@ -67,22 +89,16 @@ class Player(pygame.sprite.Sprite):
     def addNewBubbleToHand(self):
         if not self.hasBubbleLeftHand:
             self.hasBubbleLeftHand = True
-            # DRAW THE ACTUAL BUBBLE IN LEFT HAND 
-          
         if not self.hasBubbleRightHand:
             self.hasBubbleRightHand = True
-            # DRAW THE ACTUAL BUBBLE IN RIGHT HAND 
 
     def clearBubblesFromHand(self):
         self.hasBubbleLeftHand = False
         self.hasBubbleRightHand = False
         self.bubblesHolding = 0
 
-    # Function to remove a heart (decrease HP)
     def remove_hp(self):
         self.hp -= 1
-
-    # GETTERS
 
     def getBubblesHolding(self):
         return self.bubblesHolding
