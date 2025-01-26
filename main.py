@@ -31,6 +31,67 @@ def draw_hearts(screen, hp, x_offset):
     for i in range(hp):
         screen.blit(heart_image, (x_offset, 10))
         x_offset += heart_image.get_width() + 5
+def show_pre_fight_screen():
+    """Displays the pre-fight screen with a message and waits for any key to start the fight."""
+    screen.blit(background_image, (0, 0))  # Load and display the background image
+    title_text = font.render("Oh, but this is not the end...", True, BLACK)
+    fight_text = font.render("Now is the time for a real fight!", True, BLACK)
+    start_text = font.render("Press any key to continue...", True, BLACK)
+
+    # Draw text on the screen
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 100))
+    screen.blit(fight_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
+    screen.blit(start_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 50))
+
+    pygame.display.flip()  # Update the display
+
+    # Wait for any key press to continue
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                waiting = False  # Exit the loop when a key is pressed
+
+def show_welcome_screen():
+    """Displays the welcome screen with game instructions."""
+    screen.blit(background_image, (0, 0))  # Load and display the background image
+    title_text = font.render("Welcome to BubbleZilla!", True, BLACK)
+    instructions_text = font.render(
+        "Goal: Feed the sphere to your left with bubbles.", True, BLACK
+    )
+    controls_line1 = font.render(
+        "Controls: Use arrow keys or AD to move.", True, BLACK
+    )
+    controls_line2 = font.render(
+        "Space or arrow UP to jump.", True, BLACK
+    )
+    controls_line3 = font.render(
+        "Avoid blades thrown by Sven Ol-AI.", True, BLACK
+    )
+    start_text = font.render("Press any key to start...", True, BLACK)
+
+    # Draw text on the screen
+    screen.blit(title_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 180))
+    screen.blit(instructions_text, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 130))
+    screen.blit(controls_line1, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 80))
+    screen.blit(controls_line2, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 40))
+    screen.blit(controls_line3, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2))
+    screen.blit(start_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 100))
+
+    pygame.display.flip()  # Update the display
+
+    # Wait for any key press to start the game
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                waiting = False  # Exit the loop when a key is pressed
 
 
 def initialize_game():
@@ -76,6 +137,7 @@ def end_game():
     # Add a 200 milli second delay for the transition
     pygame.time.wait(200)
 
+    show_pre_fight_screen()
     # Remove all bubbles and blades from the screen
     for bubble in bubblesFalling:
         bubble.kill()
@@ -95,6 +157,7 @@ def end_game():
 
 
 # Game initialization
+show_welcome_screen()
 initialize_game()
 running = True
 
@@ -145,7 +208,7 @@ while running:
             blades.add(blade)
 
         # Check win condition
-        if score >= 14:  # Win condition for transition
+        if score >= 1:  # Win condition for transition
             end_game()
 
     elif win_state:  # Final fight logic
